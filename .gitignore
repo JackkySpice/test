@@ -5,3 +5,5 @@ npm-debug.log*
 coverage
 web/dist
 dist
+vendor/vscode-ripgrep/bin/
+vendor/vscode-ripgrep/node_modules/
