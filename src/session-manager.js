@@ -15,9 +15,34 @@ function sanitizeApprovalMode(mode) {
     ['auto-edit', 'auto-edit'],
     ['auto', 'auto-edit'],
     ['full-auto', 'full-auto'],
-    ['full', 'full-auto']
+    ['full', 'full-auto'],
+    ['untrusted', 'untrusted'],
+    ['on-request', 'on-request'],
+    ['on_request', 'on-request'],
+    ['on-failure', 'on-failure'],
+    ['on_failure', 'on-failure'],
+    ['never', 'never']
   ]);
   return map.get(normalized);
+}
+
+function approvalModeArgs(mode) {
+  if (!mode) return [];
+  switch (mode) {
+    case 'full-auto':
+      return ['--full-auto'];
+    case 'auto-edit':
+      return ['--ask-for-approval', 'on-request'];
+    case 'suggest':
+      return ['--ask-for-approval', 'untrusted'];
+    case 'untrusted':
+    case 'on-request':
+    case 'on-failure':
+    case 'never':
+      return ['--ask-for-approval', mode];
+    default:
+      return [];
+  }
 }
 
 function sanitizeModel(model) {
@@ -75,9 +100,7 @@ function buildCommand({ executable, args, approvalMode, model, additionalEnv }) 
   };
 
   const normalizedMode = sanitizeApprovalMode(approvalMode);
-  if (normalizedMode) {
-    command.args.push('--approval-mode', normalizedMode);
-  }
+  command.args.push(...approvalModeArgs(normalizedMode));
 
   const normalizedModel = sanitizeModel(model);
   if (normalizedModel) {
@@ -118,10 +141,11 @@ function createSessionManager(options = {}) {
   function createSession(request = {}) {
     const sessionId = randomUUID();
     const repoPath = sanitizeRepoPath(request.repoPath, defaultRepoPath || command.repoPath);
+    const approvalMode = sanitizeApprovalMode(request.approvalMode || command.approvalMode);
     const commandConfig = buildCommand({
       executable: request.command?.executable || command.executable,
       args: request.command?.args || command.args,
-      approvalMode: request.approvalMode || command.approvalMode,
+      approvalMode,
       model: request.model || command.model,
       additionalEnv: {
         ...(command.env || {}),
@@ -141,7 +165,7 @@ function createSessionManager(options = {}) {
       id: sessionId,
       repoPath,
       command: commandConfig,
-      approvalMode: request.approvalMode || command.approvalMode,
+      approvalMode,
       model: request.model || command.model,
       createdAt: new Date().toISOString(),
       sockets: new Map(),

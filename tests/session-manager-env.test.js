@@ -50,4 +50,23 @@ describe('session manager environment', () => {
     const spawned = ptyMock.__spawned[0];
     expect(spawned.executable).toBe('/request/codex');
   });
+
+  it('maps legacy approval modes to the new CLI flags', () => {
+    const manager = createSessionManager({ transcriptStore });
+
+    manager.createSession({ approvalMode: 'suggest' });
+    let spawned = ptyMock.__spawned[0];
+    expect(spawned.args).toContain('--ask-for-approval');
+    expect(spawned.args).toContain('untrusted');
+
+    manager.createSession({ approvalMode: 'auto-edit' });
+    spawned = ptyMock.__spawned[1];
+    expect(spawned.args).toContain('--ask-for-approval');
+    expect(spawned.args).toContain('on-request');
+
+    manager.createSession({ approvalMode: 'full-auto' });
+    spawned = ptyMock.__spawned[2];
+    expect(spawned.args).toContain('--full-auto');
+    expect(spawned.args).not.toContain('--ask-for-approval');
+  });
 });
