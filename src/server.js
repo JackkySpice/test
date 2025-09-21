@@ -87,7 +87,11 @@ function createServer(options = {}) {
   const distPath = path.resolve(__dirname, '../web/dist');
   if (fs.existsSync(distPath)) {
     app.use('/', serveStatic(distPath));
-    app.get('*', (_req, res) => {
+    // Express 5 uses path-to-regexp@7 which no longer accepts "*" style
+    // catch-all paths. Using a regular expression keeps the behaviour of
+    // serving the client application for any non-API route while remaining
+    // compatible with the new router implementation.
+    app.get(/^\/(?!api).*/, (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
