@@ -139,7 +139,7 @@ The suite covers:
 
 ### 1-click Render deploy
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/YOUR_GITHUB_USERNAME/codex-cloud-chat)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/JackkySpice/test)
 
 1. Push this repository to GitHub and replace `YOUR_GITHUB_USERNAME/codex-cloud-chat` in the button URL with your repo slug.
 2. Click the button to import the project in Render. It uses the bundled `render.yaml` for configuration.
