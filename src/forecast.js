@@ -10,6 +10,32 @@ function toNumber(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+function formatDuration(minutes) {
+  if (!Number.isFinite(minutes)) {
+    return 'soon';
+  }
+
+  if (minutes <= 0) return 'now';
+  if (minutes === 1) return '1 minute';
+  if (minutes < 60) return `${minutes} minutes`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  if (hours < 24) {
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    return `${hours}h ${remainingMinutes}m`;
+  }
+
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  if (remainingHours === 0) {
+    return `${days} ${days === 1 ? 'day' : 'days'}`;
+  }
+  return `${days}d ${remainingHours}h`;
+}
+
 export function toDateWithOffset(timeString, utcOffsetSeconds = 0) {
   if (!timeString) return null;
   const [datePart, timePart = '00:00'] = timeString.split('T');
@@ -132,11 +158,11 @@ export function describePrecipitationStatus(result, options = {}) {
       timeZone: timezone
     });
     const timeLabel = formatter.format(result.at);
-    return `Rain expected in about ${result.minutesUntil} minutes (around ${timeLabel}).`;
+    return `Rain expected in about ${formatDuration(result.minutesUntil)} (around ${timeLabel}).`;
   }
 
   if (result.status === 'clear-period') {
-    return `No rain expected in the next ${result.minutesAhead} minutes.`;
+    return `No rain expected for at least ${formatDuration(result.minutesAhead)}.`;
   }
 
   return 'Weather data is currently unavailable.';
