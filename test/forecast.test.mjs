@@ -39,6 +39,27 @@ test('getUpcomingPrecipitation returns clear-period when no rain expected', () =
   assert.ok(result.minutesAhead >= 30);
 });
 
+test('getUpcomingPrecipitation ignores rain beyond the lead time window', () => {
+  const now = new Date('2024-03-01T09:00:00Z');
+  const minutely = {
+    time: [
+      '2024-03-03T09:00',
+      '2024-03-03T09:15'
+    ],
+    precipitation: [2, 3],
+    precipitation_probability: [80, 90]
+  };
+
+  const result = getUpcomingPrecipitation(minutely, {
+    now,
+    utcOffsetSeconds: 0,
+    maxLeadTimeMinutes: 120
+  });
+
+  assert.equal(result.status, 'clear-period');
+  assert.equal(result.minutesAhead, 120);
+});
+
 test('buildTimeline caps entries and keeps chronological order', () => {
   const now = new Date('2024-03-01T09:00:00Z');
   const minutely = {
