@@ -1,0 +1,17 @@
+{
+  "name": "minute-rain-nowcast",
+  "version": "1.0.0",
+  "description": "Responsive nowcast-style precipitation viewer using Open-Meteo",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/forecast.test.mjs"
+  },
+  "keywords": [
+    "weather",
+    "rain",
+    "nowcast",
+    "open-meteo"
+  ],
+  "author": "",
+  "license": "MIT"
+}
