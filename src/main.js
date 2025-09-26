@@ -5,17 +5,20 @@ import {
 } from './forecast.js';
 
 const geocodeEndpoint = 'https://geocoding-api.open-meteo.com/v1/search';
+const reverseGeocodeEndpoint = 'https://geocoding-api.open-meteo.com/v1/reverse';
 const forecastEndpoint = 'https://api.open-meteo.com/v1/forecast';
 
 const elements = {
   form: document.querySelector('#location-form'),
   input: document.querySelector('#location-input'),
+  submitButton: document.querySelector('#location-form button[type="submit"]'),
   useLocation: document.querySelector('#use-location'),
   loading: document.querySelector('#loading-indicator'),
   forecastCard: document.querySelector('#forecast-card'),
   locationLabel: document.querySelector('#location-label'),
   statusChip: document.querySelector('#status-chip'),
   statusMessage: document.querySelector('#status-message'),
+  statusIllustration: document.querySelector('#status-illustration'),
   statusDetails: document.querySelector('#status-details'),
   timelineList: document.querySelector('#timeline-list'),
   searchResults: document.querySelector('#search-results'),
@@ -25,6 +28,12 @@ const elements = {
 function setLoading(isLoading) {
   elements.loading.hidden = !isLoading;
   elements.useLocation.disabled = isLoading;
+  if (elements.submitButton) {
+    elements.submitButton.disabled = isLoading;
+  }
+  if (elements.input) {
+    elements.input.toggleAttribute('aria-busy', isLoading);
+  }
 }
 
 function showError(message) {
@@ -75,6 +84,55 @@ async function geocode(query) {
   }
   const data = await response.json();
   return data.results ?? [];
+}
+
+const GENERIC_LABELS = new Set(['Your location', 'Selected location']);
+
+async function reverseGeocode({ latitude, longitude }) {
+  if (latitude == null || longitude == null) return null;
+  const params = new URLSearchParams({
+    latitude: latitude.toString(),
+    longitude: longitude.toString(),
+    count: '1',
+    language: 'en',
+    format: 'json'
+  });
+  const response = await fetch(`${reverseGeocodeEndpoint}?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error('Reverse geocoding failed');
+  }
+  const data = await response.json();
+  return data.results?.[0] ?? null;
+}
+
+async function resolveLocationLabel(location = {}) {
+  const manualLabel = location.label?.trim();
+  const isCoordinateLabel = manualLabel ? /^Lat\s-?\d+(?:\.\d+)?,\sLon\s-?\d+(?:\.\d+)?$/i.test(manualLabel) : false;
+  if (manualLabel && !GENERIC_LABELS.has(manualLabel) && !isCoordinateLabel) {
+    return manualLabel;
+  }
+
+  if (location.name) {
+    return formatLocation(location);
+  }
+
+  if (location.latitude != null && location.longitude != null) {
+    try {
+      const place = await reverseGeocode(location);
+      if (place) {
+        return formatLocation(place);
+      }
+    } catch (error) {
+      console.warn('Reverse geocoding failed', error);
+    }
+    const latitude = Number(location.latitude);
+    const longitude = Number(location.longitude);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      return `Lat ${latitude.toFixed(2)}, Lon ${longitude.toFixed(2)}`;
+    }
+  }
+
+  return manualLabel || 'Selected location';
 }
 
 async function fetchForecast({ latitude, longitude }) {
@@ -248,12 +306,37 @@ function updateStatusChip(result) {
   elements.statusChip.hidden = true;
 }
 
+function updateStatusIllustration(result) {
+  const baseClass = 'status-hero__icon';
+  elements.statusIllustration.className = baseClass;
+
+  if (!result || result.status === 'no-data') {
+    elements.statusIllustration.classList.add('is-nodata');
+    return;
+  }
+
+  if (result.status === 'rain-expected') {
+    elements.statusIllustration.classList.add('is-rain');
+    return;
+  }
+
+  if (result.status === 'clear-period') {
+    elements.statusIllustration.classList.add('is-clear');
+    return;
+  }
+
+  elements.statusIllustration.classList.add('is-nodata');
+}
+
 async function loadForecast(location) {
   try {
     setLoading(true);
     showError('');
     clearSearchResults();
-    const data = await fetchForecast(location);
+    const [data, resolvedLabel] = await Promise.all([
+      fetchForecast(location),
+      resolveLocationLabel(location)
+    ]);
     const now = new Date();
     const upcoming = getUpcomingPrecipitation(data.minutely_15, {
       now,
@@ -266,14 +349,12 @@ async function loadForecast(location) {
       timelineEntries: 8
     });
 
-    const fallbackLabel = location.latitude && location.longitude
-      ? `Lat ${Number(location.latitude).toFixed(2)}, Lon ${Number(location.longitude).toFixed(2)}`
-      : 'Selected location';
-    const displayLabel = (location.label || formatLocation(location) || fallbackLabel).trim();
+    const displayLabel = resolvedLabel.trim();
     const tzAbbr = data.timezone_abbreviation ? ` · ${data.timezone_abbreviation}` : '';
     elements.locationLabel.textContent = `${displayLabel}${tzAbbr}`;
     elements.statusMessage.textContent = message;
     updateStatusChip(upcoming);
+    updateStatusIllustration(upcoming);
     renderStatusDetails(upcoming, timeline, { timezone: data.timezone });
     renderTimeline(timeline, { timezone: data.timezone });
     elements.forecastCard.hidden = false;
@@ -341,6 +422,11 @@ async function handleGeolocation() {
   setLoading(true);
   showError('');
   clearSearchResults();
+  elements.locationLabel.textContent = 'Locating you…';
+  elements.statusMessage.textContent = 'Hang tight while we look up the closest rain radar.';
+  elements.statusChip.hidden = true;
+  updateStatusIllustration(null);
+  elements.forecastCard.hidden = false;
 
   navigator.geolocation.getCurrentPosition(
     position => {

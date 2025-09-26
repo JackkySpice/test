@@ -45,6 +45,11 @@
             <span>Fetching forecast…</span>
           </div>
         </div>
+        <ul class="card__features">
+          <li>Minute-by-minute rain probabilities</li>
+          <li>Smart arrival estimates for the next showers</li>
+          <li>Plan ahead with a curated 2 hour timeline</li>
+        </ul>
         <div id="search-results" class="search-results" role="list"></div>
         <p id="input-error" class="message message--error" role="alert" hidden></p>
       </section>
@@ -54,8 +59,13 @@
           <h2 id="forecast-title">Rain outlook</h2>
           <p id="location-label" class="location-label"></p>
         </div>
-        <div id="status-chip" class="status-chip" hidden></div>
-        <p id="status-message" class="status-message"></p>
+        <div class="status-hero">
+          <div id="status-illustration" class="status-hero__icon" aria-hidden="true"></div>
+          <div class="status-hero__content">
+            <div id="status-chip" class="status-chip" hidden></div>
+            <p id="status-message" class="status-message"></p>
+          </div>
+        </div>
         <dl class="status-details" id="status-details"></dl>
 
         <div class="timeline" aria-live="polite">
