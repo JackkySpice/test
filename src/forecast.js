@@ -1,7 +1,8 @@
 const DEFAULT_OPTIONS = {
   probabilityThreshold: 30,
   precipitationThreshold: 0.1,
-  timelineEntries: 8
+  timelineEntries: 8,
+  maxLeadTimeMinutes: 180
 };
 
 function toNumber(value) {
@@ -24,7 +25,13 @@ export function getUpcomingPrecipitation(minutelyData, options = {}) {
     return { status: 'no-data' };
   }
 
-  const { probabilityThreshold, precipitationThreshold, now = new Date(), utcOffsetSeconds = 0 } = mergedOptions;
+  const {
+    probabilityThreshold,
+    precipitationThreshold,
+    now = new Date(),
+    utcOffsetSeconds = 0,
+    maxLeadTimeMinutes
+  } = mergedOptions;
 
   const entries = minutelyData.time.map((isoTime, index) => {
     const precipitation = toNumber(minutelyData.precipitation?.[index]);
@@ -48,14 +55,22 @@ export function getUpcomingPrecipitation(minutelyData, options = {}) {
     return { status: 'no-data' };
   }
 
-  const rainyEntry = relevantEntries.find(entry => {
+  const leadTimeLimit = Number.isFinite(maxLeadTimeMinutes) && maxLeadTimeMinutes > 0
+    ? maxLeadTimeMinutes * 60000
+    : null;
+  const latestAllowed = leadTimeLimit != null ? nowTime + leadTimeLimit : Infinity;
+  const entriesWithinWindow = relevantEntries.filter(entry => entry.at.getTime() <= latestAllowed);
+
+  const searchEntries = entriesWithinWindow.length ? entriesWithinWindow : relevantEntries;
+
+  const rainyEntry = entriesWithinWindow.find(entry => {
     const precipitation = entry.precipitation ?? 0;
     const probability = entry.probability ?? 0;
     return precipitation >= precipitationThreshold || probability >= probabilityThreshold;
   });
 
-  const firstEntry = relevantEntries[0];
-  const lastEntry = relevantEntries[relevantEntries.length - 1];
+  const firstEntry = searchEntries[0];
+  const lastEntry = searchEntries[searchEntries.length - 1];
 
   if (rainyEntry) {
     const minutesUntil = Math.max(0, Math.round((rainyEntry.at.getTime() - nowTime) / 60000));
@@ -68,10 +83,14 @@ export function getUpcomingPrecipitation(minutelyData, options = {}) {
     };
   }
 
+  const minutesAhead = entriesWithinWindow.length
+    ? Math.max(0, Math.round((lastEntry.at.getTime() - nowTime) / 60000))
+    : (leadTimeLimit != null ? Math.round(leadTimeLimit / 60000) : Math.max(0, Math.round((lastEntry.at.getTime() - nowTime) / 60000)));
+
   return {
     status: 'clear-period',
-    minutesAhead: Math.max(0, Math.round((lastEntry.at.getTime() - nowTime) / 60000)),
-    nextCheck: firstEntry.at
+    minutesAhead,
+    nextCheck: firstEntry?.at
   };
 }
 
