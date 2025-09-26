@@ -33,9 +33,9 @@ npm run test
 
 Deploy the site to Netlify with a single click after pushing this repository to GitHub (or another git provider supported by Netlify):
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/JackkySpice/test)
 
-> 🔁 Replace `YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME` with the actual repository slug once it lives on GitHub. Netlify will detect the static site, apply the included `netlify.toml`, and publish automatically.
+Netlify will detect the static site, apply the included `netlify.toml`, and publish automatically.
 
 ## 🧭 Environment variables
 
