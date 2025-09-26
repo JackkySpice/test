@@ -1,9 +1,0 @@
-node_modules
-npm-debug.log*
-.DS_Store
-.env
-coverage
-web/dist
-dist
-vendor/vscode-ripgrep/bin/
-vendor/vscode-ripgrep/node_modules/
