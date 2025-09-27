@@ -68,27 +68,33 @@
               <p id="location-label" class="location-label"></p>
             </div>
             <div class="preferences" role="group" aria-label="Display options">
-              <label class="preferences__label" for="unit-precipitation" data-i18n="preferences.precip">
-                Rain
-              </label>
-              <select id="unit-precipitation" class="select">
-                <option value="mm" data-i18n="preferences.mm">mm</option>
-                <option value="in" data-i18n="preferences.in">inches</option>
-              </select>
-              <label class="preferences__label" for="unit-probability" data-i18n="preferences.probability">
-                Chance
-              </label>
-              <select id="unit-probability" class="select">
-                <option value="percent" data-i18n="preferences.percent">%</option>
-                <option value="qualitative" data-i18n="preferences.qualitative">Low/High</option>
-              </select>
-              <label class="preferences__label" for="language-select" data-i18n="preferences.language">
-                Language
-              </label>
-              <select id="language-select" class="select">
-                <option value="en" data-i18n="preferences.english">English</option>
-                <option value="es" data-i18n="preferences.spanish">Español</option>
-              </select>
+              <div class="preferences__item">
+                <label class="preferences__label" for="unit-precipitation" data-i18n="preferences.precip">
+                  Rain
+                </label>
+                <select id="unit-precipitation" class="select">
+                  <option value="mm" data-i18n="preferences.mm">mm</option>
+                  <option value="in" data-i18n="preferences.in">inches</option>
+                </select>
+              </div>
+              <div class="preferences__item">
+                <label class="preferences__label" for="unit-probability" data-i18n="preferences.probability">
+                  Chance
+                </label>
+                <select id="unit-probability" class="select">
+                  <option value="percent" data-i18n="preferences.percent">%</option>
+                  <option value="qualitative" data-i18n="preferences.qualitative">Low/High</option>
+                </select>
+              </div>
+              <div class="preferences__item">
+                <label class="preferences__label" for="language-select" data-i18n="preferences.language">
+                  Language
+                </label>
+                <select id="language-select" class="select">
+                  <option value="en" data-i18n="preferences.english">English</option>
+                  <option value="es" data-i18n="preferences.spanish">Español</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
