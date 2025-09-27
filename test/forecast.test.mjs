@@ -4,7 +4,8 @@ import {
   toDateWithOffset,
   getUpcomingPrecipitation,
   buildTimeline,
-  describePrecipitationStatus
+  describePrecipitationStatus,
+  buildHourlyFallback
 } from '../src/forecast.js';
 
 test('toDateWithOffset converts local timestamps using timezone offset', () => {
@@ -95,4 +96,43 @@ test('describePrecipitationStatus creates human readable summaries', () => {
 
   const clearStatus = describePrecipitationStatus({ status: 'clear-period', minutesAhead: 60 });
   assert.match(clearStatus, /No rain expected/);
+});
+
+test('buildHourlyFallback provides hourly timeline and status', () => {
+  const now = new Date('2024-03-01T09:00:00Z');
+  const hourly = {
+    time: ['2024-03-01T09:00', '2024-03-01T10:00', '2024-03-01T11:00'],
+    precipitation: [0, 0.3, 0],
+    precipitation_probability: [10, 60, 20]
+  };
+
+  const { timeline, status } = buildHourlyFallback(hourly, { now, utcOffsetSeconds: 0 });
+  assert.equal(timeline.length, 3);
+  assert.equal(timeline[0].interval, 'hour');
+  assert.equal(status.status, 'rain-expected');
+  assert.equal(status.minutesUntil, 60);
+});
+
+test('describePrecipitationStatus supports custom strings', () => {
+  const message = describePrecipitationStatus(
+    { status: 'clear-period', minutesAhead: 30 },
+    {
+      strings: {
+        clear: 'Libre por {duration}',
+        duration: {
+          now: 'ahora',
+          soon: 'pronto',
+          minute: '1 minuto',
+          minutes: '{value} minutos',
+          hour: '1 hora',
+          hours: '{value} horas',
+          day: '1 día',
+          days: '{value} días',
+          hoursMinutes: '{hours}h {minutes}m',
+          daysHours: '{days}d {hours}h'
+        }
+      }
+    }
+  );
+  assert.equal(message, 'Libre por 30 minutos');
 });
