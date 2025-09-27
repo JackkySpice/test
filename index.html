@@ -16,48 +16,81 @@
     <div class="background"></div>
     <main class="app" role="main">
       <header class="app__header">
-        <h1>SkyCast</h1>
-        <p class="tagline">Hyperlocal rain alerts powered by Open-Meteo</p>
+        <h1 data-i18n="app.title">SkyCast</h1>
+        <p class="tagline" data-i18n="app.tagline">Hyperlocal rain alerts powered by Open-Meteo</p>
       </header>
 
       <section class="card card--input" aria-labelledby="location-title">
         <div class="card__header">
-          <h2 id="location-title">Check your sky</h2>
-          <p>Search for a place or use your current location to see minute-by-minute rain expectations.</p>
+          <h2 id="location-title" data-i18n="input.title">Check your sky</h2>
+          <p data-i18n="input.description">
+            Search for a place or use your current location to see minute-by-minute rain expectations.
+          </p>
         </div>
-        <form id="location-form" class="location-form" autocomplete="off">
-          <label class="sr-only" for="location-input">City, address or coordinates</label>
+        <form id="location-form" class="location-form" autocomplete="off" novalidate>
+          <label class="sr-only" for="location-input" data-i18n="input.label">City, address or coordinates</label>
           <div class="location-form__group">
             <input
               id="location-input"
               name="location"
               type="search"
+              data-i18n-placeholder="input.placeholder"
               placeholder="Try “Berlin”, “New York”, or “48.85, 2.35”"
               required
             />
-            <button type="submit" class="btn primary">Search</button>
+            <button type="submit" class="btn primary" data-i18n="input.search">Search</button>
           </div>
         </form>
+        <p id="input-hint" class="message message--hint" aria-live="polite"></p>
         <div class="action-row">
-          <button id="use-location" class="btn ghost" type="button">Use my location</button>
+          <button id="use-location" class="btn ghost" type="button" data-i18n="input.useLocation">
+            Use my location
+          </button>
           <div id="loading-indicator" class="loading" hidden>
             <span class="spinner" aria-hidden="true"></span>
-            <span>Fetching forecast…</span>
+            <span data-i18n="loading.message">Fetching forecast…</span>
           </div>
         </div>
         <ul class="card__features">
-          <li>Minute-by-minute rain probabilities</li>
-          <li>Smart arrival estimates for the next showers</li>
-          <li>Plan ahead with a curated 2 hour timeline</li>
+          <li data-i18n="features.precip">Minute-by-minute rain probabilities</li>
+          <li data-i18n="features.arrival">Smart arrival estimates for the next showers</li>
+          <li data-i18n="features.timeline">Plan ahead with a curated 2 hour timeline</li>
         </ul>
         <div id="search-results" class="search-results" role="list"></div>
         <p id="input-error" class="message message--error" role="alert" hidden></p>
       </section>
 
-      <section id="forecast-card" class="card card--forecast" aria-live="polite" hidden>
+      <section id="forecast-card" class="card card--forecast" aria-live="polite" aria-atomic="true" hidden>
         <div class="card__header">
-          <h2 id="forecast-title">Rain outlook</h2>
-          <p id="location-label" class="location-label"></p>
+          <div class="card__header-content">
+            <div>
+              <h2 id="forecast-title" data-i18n="forecast.title">Rain outlook</h2>
+              <p id="location-label" class="location-label"></p>
+            </div>
+            <div class="preferences" role="group" aria-label="Display options">
+              <label class="preferences__label" for="unit-precipitation" data-i18n="preferences.precip">
+                Rain
+              </label>
+              <select id="unit-precipitation" class="select">
+                <option value="mm" data-i18n="preferences.mm">mm</option>
+                <option value="in" data-i18n="preferences.in">inches</option>
+              </select>
+              <label class="preferences__label" for="unit-probability" data-i18n="preferences.probability">
+                Chance
+              </label>
+              <select id="unit-probability" class="select">
+                <option value="percent" data-i18n="preferences.percent">%</option>
+                <option value="qualitative" data-i18n="preferences.qualitative">Low/High</option>
+              </select>
+              <label class="preferences__label" for="language-select" data-i18n="preferences.language">
+                Language
+              </label>
+              <select id="language-select" class="select">
+                <option value="en" data-i18n="preferences.english">English</option>
+                <option value="es" data-i18n="preferences.spanish">Español</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="status-hero">
           <div id="status-illustration" class="status-hero__icon" aria-hidden="true"></div>
@@ -66,16 +99,32 @@
             <p id="status-message" class="status-message"></p>
           </div>
         </div>
+        <div id="offline-banner" class="message message--warning" role="status" hidden>
+          <span id="offline-message"></span>
+          <button id="retry-button" class="btn ghost btn--small" type="button" data-i18n="offline.retry">
+            Retry
+          </button>
+        </div>
         <dl class="status-details" id="status-details"></dl>
 
-        <div class="timeline" aria-live="polite">
-          <h3>Next 2 hours snapshot</h3>
+        <div class="timeline" aria-live="polite" aria-atomic="true">
+          <h3 data-i18n="timeline.title">Next 2 hours snapshot</h3>
           <ul id="timeline-list" class="timeline__list"></ul>
+        </div>
+
+        <div id="radar" class="radar" hidden>
+          <h3 id="radar-title" data-i18n="radar.title">Radar overlay</h3>
+          <div class="radar__frame">
+            <img id="radar-image" alt="Precipitation radar" loading="lazy" />
+          </div>
+          <p class="radar__caption" data-i18n-html="radar.caption">
+            Radar imagery courtesy of <a href="https://www.rainviewer.com" target="_blank" rel="noopener">Rainviewer</a>.
+          </p>
         </div>
       </section>
 
       <footer class="app__footer">
-        <p>
+        <p data-i18n-html="footer.copy">
           Data by
           <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>.
           For best results allow location access so we can center the forecast near you.
@@ -84,5 +133,14 @@
     </main>
 
     <script type="module" src="src/main.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register('./service-worker.js')
+            .catch(error => console.warn('Service worker registration failed', error));
+        });
+      }
+    </script>
   </body>
 </html>
